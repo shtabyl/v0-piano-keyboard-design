@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useEffect, useRef } from "react"
+import { useState, useCallback, useEffect, useRef, useMemo } from "react"
 import * as Tone from "tone"
 import { Button } from "@/components/ui/button"
 import { Volume2, VolumeX } from "lucide-react"
@@ -360,10 +360,76 @@ export default function PianoKeyboard() {
     }
   }, [handleKeyPress, handleKeyRelease, pressedKeys])
 
-  // Combine both highlight sources
-  const getCombinedHighlight = (note: string): string | undefined => {
-    return midiHighlightedKeys[note] || highlightedKeys[note]
-  }
+  // Generate all keys in order for range calculation
+  const allKeysInOrder = useMemo(() => {
+    const keys: string[] = []
+    for (const octave of [3, 4, 5]) {
+      for (const { note, hasBlack } of OCTAVE_PATTERN) {
+        keys.push(`${note}${octave}`)
+        if (hasBlack) {
+          keys.push(`${note}#${octave}`)
+        }
+      }
+    }
+    return keys
+  }, [])
+
+  // Calculate which keys should be gray (in-between unselected keys)
+  const inBetweenKeys = useMemo(() => {
+    const allSelectedKeys = new Set([
+      ...Object.keys(highlightedKeys),
+      ...Object.keys(midiHighlightedKeys),
+    ])
+
+    if (allSelectedKeys.size < 2) {
+      return new Set<string>()
+    }
+
+    // Find indices of selected keys
+    const selectedIndices: number[] = []
+    allKeysInOrder.forEach((key, index) => {
+      if (allSelectedKeys.has(key)) {
+        selectedIndices.push(index)
+      }
+    })
+
+    if (selectedIndices.length < 2) {
+      return new Set<string>()
+    }
+
+    const minIndex = Math.min(...selectedIndices)
+    const maxIndex = Math.max(...selectedIndices)
+
+    // Get all keys between min and max that are not selected
+    const inBetween = new Set<string>()
+    for (let i = minIndex; i <= maxIndex; i++) {
+      const key = allKeysInOrder[i]
+      if (!allSelectedKeys.has(key)) {
+        inBetween.add(key)
+      }
+    }
+
+    return inBetween
+  }, [highlightedKeys, midiHighlightedKeys, allKeysInOrder])
+
+  // Combine both highlight sources, with gray for in-between keys
+  const getCombinedHighlight = useCallback(
+    (note: string): string | undefined => {
+      // Selected keys keep their active color
+      const selectedColor = midiHighlightedKeys[note] || highlightedKeys[note]
+      if (selectedColor) {
+        return selectedColor
+      }
+
+      // Check if this key should be gray (in-between unselected)
+      if (inBetweenKeys.has(note)) {
+        return "rgb(214, 214, 214)"
+      }
+
+      return undefined
+    },
+    [highlightedKeys, midiHighlightedKeys, inBetweenKeys]
+  )
 
   const renderOctave = (octaveNumber: number) => {
     return OCTAVE_PATTERN.map(({ note, hasBlack }) => {
