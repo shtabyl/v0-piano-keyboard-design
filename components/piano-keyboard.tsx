@@ -425,7 +425,7 @@ export default function PianoKeyboard() {
             type="color"
             value={selectedColor}
             onChange={(e) => setSelectedColor(e.target.value)}
-            className="w-8 h-8 rounded-full cursor-pointer border-0 p-0 overflow-hidden"
+            className="w-8 h-8 rounded-lg cursor-pointer border-0 p-0 overflow-hidden"
             aria-label="Custom color picker"
           />
         </div>
