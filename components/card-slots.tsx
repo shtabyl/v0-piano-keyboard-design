@@ -9,9 +9,8 @@ import {
   DragStartEvent,
   useDraggable,
   useDroppable,
-  closestCenter,
+  pointerWithin,
 } from "@dnd-kit/core"
-import { CSS } from "@dnd-kit/utilities"
 
 type CardType = "major" | "minor1" | "minor2" | "augmented"
 
@@ -51,7 +50,7 @@ function Card({ type, id }: { type: CardType; id?: string }) {
 
 // Draggable source card component
 function DraggableSourceCard({ type, id }: { type: CardType; id: string }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+  const { attributes, listeners, setNodeRef } = useDraggable({
     id,
     data: {
       type: "source",
@@ -59,13 +58,8 @@ function DraggableSourceCard({ type, id }: { type: CardType; id: string }) {
     },
   })
 
-  const style = {
-    transform: CSS.Translate.toString(transform),
-    opacity: isDragging ? 0.5 : 1,
-  }
-
   return (
-    <div ref={setNodeRef} style={style} {...listeners} {...attributes}>
+    <div ref={setNodeRef} {...listeners} {...attributes} className="cursor-grab active:cursor-grabbing">
       <Card type={type} />
     </div>
   )
@@ -73,7 +67,7 @@ function DraggableSourceCard({ type, id }: { type: CardType; id: string }) {
 
 // Draggable card in slot component
 function DraggableSlotCard({ card, slotId }: { card: SlotCard; slotId: string }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+  const { attributes, listeners, setNodeRef } = useDraggable({
     id: slotId,
     data: {
       type: "slot-card",
@@ -82,13 +76,8 @@ function DraggableSlotCard({ card, slotId }: { card: SlotCard; slotId: string })
     },
   })
 
-  const style = {
-    transform: CSS.Translate.toString(transform),
-    opacity: isDragging ? 0.5 : 1,
-  }
-
   return (
-    <div ref={setNodeRef} style={style} {...listeners} {...attributes} className="w-full h-full">
+    <div ref={setNodeRef} {...listeners} {...attributes} className="w-full h-full cursor-grab active:cursor-grabbing">
       <Card type={card.type} id={card.id} />
     </div>
   )
@@ -160,13 +149,24 @@ export default function CardSlots() {
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event
 
-    if (!over) {
+    const activeData = active.data.current
+    const overId = over?.id as string | undefined
+
+    // Check if dropping outside of any slot (deletion case)
+    if (!over || !overId?.startsWith("slot-")) {
+      // Only delete if dragging from a slot (not from source cards)
+      if (activeData?.type === "slot-card" && activeData?.slotId) {
+        const sourceSlotId = activeData.slotId as string
+        setSlotCards((prev) => {
+          const updated = { ...prev }
+          // Remove card from slot
+          updated[sourceSlotId] = null
+          return updated
+        })
+      }
       setActiveId(null)
       return
     }
-
-    const activeData = active.data.current
-    const overId = over.id as string
 
     // Check if dropping on a slot
     if (overId.startsWith("slot-")) {
@@ -221,10 +221,10 @@ export default function CardSlots() {
   }
 
   return (
-    <DndContext collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <div className="flex flex-row gap-12 w-full max-w-6xl">
+    <DndContext collisionDetection={pointerWithin} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+      <div className="flex flex-row justify-around w-full max-w-6xl">
         {/* Left side: Grid of empty slots with tone connectors */}
-        <div className="flex-1 flex flex-col gap-6">
+        <div className="flex flex-col gap-6">
           {rows.map((rowIndex) => (
             <div key={rowIndex} className="flex items-center justify-center gap-[5px]">
               {/* First slot */}
@@ -241,7 +241,7 @@ export default function CardSlots() {
                   alt="Tone connector"
                   width={52}
                   height={52}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain mt-[10px]"
                 />
               </div>
               {/* Second slot */}
@@ -256,17 +256,17 @@ export default function CardSlots() {
         </div>
 
         {/* Right side: Source cards (infinite supply) */}
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-6">
           {sourceCards.map(({ id, type }) => (
             <DraggableSourceCard key={id} id={id} type={type} />
           ))}
         </div>
       </div>
 
-      {/* Drag overlay */}
-      <DragOverlay>
+      {/* Drag overlay - shows ghost image while dragging */}
+      <DragOverlay dropAnimation={null}>
         {activeId && getActiveCardType() ? (
-          <div className="opacity-90">
+          <div className="opacity-80 rotate-2 shadow-2xl">
             <Card type={getActiveCardType()!} />
           </div>
         ) : null}
