@@ -1,30 +1,24 @@
-# Piano keyboard design
+# 🎹 Scale Master
 
-*Automatically synced with your [v0.app](https://v0.app) deployments*
+**Scale Master** is an interactive web application designed to help musicians and students visualize musical scales and build them dynamically on a piano keyboard. Whether you are practicing music theory or composing, Scale Master provides a clear visual representation of harmonic structures.
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/tutaca-7705s-projects/v0-piano-keyboard-design)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.app-black?style=for-the-badge)](https://v0.app/chat/KjwwOIZIMwt)
+## ✨ Features
 
-## Overview
+-   **Interactive Piano Keyboard**: Playable keyboard interface with real-time visual feedback.
+-   **Smart Interval Highlighting**: 
+    -   When two or more keys are selected, the application automatically highlights the intervals (the "gaps") between the first and last selected notes in a subtle gray (`rgb(214, 214, 214)`).
+    -   Easily visualize the distance between notes in any scale or chord.
+-   **Advanced Drag-and-Drop Workflow**:
+    -   **Infinite Card Supply**: Drag scale/chord cards from the right-side library into functional slots.
+    -   **Smart Replacement**: Dropping a new card into an occupied slot automatically replaces the previous one.
+    -   **Quick Add**: Simply click a card to send it to the first available empty slot.
+    -   **Easy Cleanup**: Drag a card out of its slot and drop it anywhere else to remove it.
+-   **Visual Alignment**: Perfectly aligned UI where the control slots and cards match the width of the piano keyboard for a professional look.
 
-This repository will stay in sync with your deployed chats on [v0.app](https://v0.app).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.app](https://v0.app).
+## 🛠 Tech Stack
 
-## Deployment
-
-Your project is live at:
-
-**[https://vercel.com/tutaca-7705s-projects/v0-piano-keyboard-design](https://vercel.com/tutaca-7705s-projects/v0-piano-keyboard-design)**
-
-## Build your app
-
-Continue building your app on:
-
-**[https://v0.app/chat/KjwwOIZIMwt](https://v0.app/chat/KjwwOIZIMwt)**
-
-## How It Works
-
-1. Create and modify your project using [v0.app](https://v0.app)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+-   **Framework**: [Next.js](https://nextjs.org)
+-   **Styling**: [Tailwind CSS](https://tailwindcss.com)
+-   **Drag & Drop**: [@dnd-kit](https://dnd-kit.com)
+-   **Icons**: [Figma](https://figma.com)
+-   **Deployment**: [Vercel](https://vercel.com)
