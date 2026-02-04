@@ -266,7 +266,7 @@ export default function CardSlots() {
       {/* Drag overlay - shows ghost image while dragging */}
       <DragOverlay dropAnimation={null}>
         {activeId && getActiveCardType() ? (
-          <div className="opacity-80 rotate-2 shadow-2xl">
+          <div className="opacity-80 rotate-2">
             <Card type={getActiveCardType()!} />
           </div>
         ) : null}
